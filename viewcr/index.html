@@ -2,14 +2,14 @@
 (function () {
   try {
     var currentPath = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
-    var marker = "/-nCrNumber-PKE6uWRrNXbCmX6nKtUvwA-/";
+    var marker = "/viewcr/";
     var markerIndex = currentPath.lastIndexOf(marker);
     var deploymentBase = markerIndex >= 0 ? currentPath.slice(0, markerIndex) : '';
     window.__CLONED_DEPLOYMENT_BASE__ = deploymentBase;
-    var targetRoute = deploymentBase + "/";
-if (location.pathname !== targetRoute) {
-  history.replaceState(null, document.title, targetRoute);
-}
+    var targetRoute = deploymentBase + "/viewcr?nCrNumber=PKE6uWRrNXbCmX6nKtUvwA==";
+    if (location.pathname + location.search + location.hash !== targetRoute) {
+      history.replaceState(null, document.title, targetRoute);
+    }
   } catch (_) {}
 })();
 </script><script>
