@@ -2787,17 +2787,17 @@ select {
   @tailwind utilities;
   @font-face {
   font-family:DIN Next LT Arabic;
-  src:local("DIN Next LT Arabic"), url(/assets/DINNextLTArabic-Regular-DYtxlCll.woff2) format("woff2");
+  src:local("DIN Next LT Arabic"), url("../../assets/DINNextLTArabic-Regular-DYtxlCll.woff2") format("woff2");
   font-weight:400
 }
 @font-face {
   font-family:DIN Next LT Arabic;
-  src:local("DIN Next LT Arabic Medium"), url(/assets/DINNextLTArabic-Medium-C5X_7zdr.woff2) format("woff2");
+  src:local("DIN Next LT Arabic Medium"), url("../../assets/DINNextLTArabic-Medium-C5X_7zdr.woff2") format("woff2");
   font-weight:500
 }
 @font-face {
   font-family:DIN Next LT Arabic;
-  src:local("DIN Next LT Arabic Bold"), url(/assets/DINNextLTArabic-Bold-D6gNGPOf.woff2) format("woff2");
+  src:local("DIN Next LT Arabic Bold"), url("../../assets/DINNextLTArabic-Bold-D6gNGPOf.woff2") format("woff2");
   font-weight:700
 }
 body {
