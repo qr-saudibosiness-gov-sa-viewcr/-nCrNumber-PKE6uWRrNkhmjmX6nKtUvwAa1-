@@ -14,25 +14,48 @@
 })();
 </script><script>
 (function () {
-  var assetRoot = /^/(?:assets|css|js|images|fonts|media)(?:/|$)/;
-  function resolve(value) {
-    if (typeof value !== 'string' || !assetRoot.test(value)) return value;
-    return (window.__CLONED_DEPLOYMENT_BASE__ || '') + value;
+  var assetPath = /^(?:/)?(?:assets|css|js|images|fonts|media)(?:/|$)/;
+
+  function isAssetPath(value) {
+    return typeof value === 'string' && assetPath.test(value);
   }
+
+  function normalizeAssetPath(value) {
+    if (typeof value !== 'string' || !value) return value;
+
+    var raw = value.trim();
+
+    try {
+      var parsed = new URL(raw, location.href);
+      if (isAssetPath(parsed.pathname)) {
+        return (window.__CLONED_DEPLOYMENT_BASE__ || '') + parsed.pathname + parsed.search + parsed.hash;
+      }
+    } catch (_) {}
+
+    var stripped = raw.replace(/^[a-z]+://[^/]+/i, '');
+    if (isAssetPath(stripped)) {
+      return (window.__CLONED_DEPLOYMENT_BASE__ || '') + (stripped.startsWith('/') ? stripped : '/' + stripped);
+    }
+
+    return value;
+  }
+
   function resolveCss(value) {
-    return typeof value === 'string'
-      ? value.replace(/url((['"]?)/(assets|css|js|images|fonts|media)//gi, function (_, quote, folder) {
-          return 'url(' + quote + (window.__CLONED_DEPLOYMENT_BASE__ || '') + '/' + folder + '/';
-        })
-      : value;
+    if (typeof value !== 'string') return value;
+    return value.replace(/url\((['"]?)(.*?)\1\)/gi, function (match, quote, raw) {
+      var resolved = normalizeAssetPath(raw.trim());
+      return resolved === raw.trim() ? match : 'url(' + quote + resolved + quote + ')';
+    });
   }
+
   var setAttribute = Element.prototype.setAttribute;
   Element.prototype.setAttribute = function (name, value) {
     var attribute = String(name).toLowerCase();
-    if (attribute === 'src' || attribute === 'href' || attribute === 'poster' || attribute === 'data') value = resolve(value);
+    if (attribute === 'src' || attribute === 'href' || attribute === 'poster' || attribute === 'data') value = normalizeAssetPath(value);
     if (attribute === 'style') value = resolveCss(value);
     return setAttribute.call(this, name, value);
   };
+
   [['HTMLImageElement', 'src'], ['HTMLScriptElement', 'src'], ['HTMLLinkElement', 'href'], ['HTMLSourceElement', 'src'], ['HTMLVideoElement', 'poster'], ['HTMLAudioElement', 'src']].forEach(function (entry) {
     var Type = window[entry[0]];
     if (!Type) return;
@@ -42,20 +65,23 @@
       configurable: true,
       enumerable: descriptor.enumerable,
       get: descriptor.get,
-      set: function (value) { return descriptor.set.call(this, resolve(value)); }
+      set: function (value) { return descriptor.set.call(this, normalizeAssetPath(value)); }
     });
   });
+
   var originalFetch = window.fetch && window.fetch.bind(window);
   if (originalFetch) window.fetch = function (input, init) {
-    if (typeof input === 'string') input = resolve(input);
-    else if (input && input.url) input = new Request(resolve(input.url), input);
+    if (typeof input === 'string') input = normalizeAssetPath(input);
+    else if (input && input.url) input = new Request(normalizeAssetPath(input.url), input);
     return originalFetch(input, init);
   };
+
   var open = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url) {
-    arguments[1] = resolve(url);
+    arguments[1] = normalizeAssetPath(url);
     return open.apply(this, arguments);
   };
+
   var setProperty = CSSStyleDeclaration.prototype.setProperty;
   CSSStyleDeclaration.prototype.setProperty = function (name, value, priority) {
     return setProperty.call(this, name, resolveCss(value), priority);
